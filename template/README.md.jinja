@@ -1,0 +1,68 @@
+# {{ project_name }}
+
+{{ description }}
+
+## Requirements
+
+- [mise](https://mise.jdx.dev/) — installs the pinned Python {{ python_version }} and uv
+
+## Getting started
+
+```bash
+mise trust && mise install   # install Python + uv
+mise run setup               # uv sync + install pre-commit hooks
+mise run check               # run all hooks and tests
+```
+
+Run the agent:
+
+```bash
+uv run {{ project_slug }}
+```
+
+## Development tasks
+
+| Task                  | Description                          |
+| --------------------- | ------------------------------------ |
+| `mise run setup`      | Install dependencies and git hooks   |
+| `mise run lint`       | Lint with ruff                       |
+| `mise run format`     | Auto-fix and format with ruff        |
+| `mise run typecheck`  | Type check with ty                   |
+| `mise run test`       | Run the test suite with pytest       |
+| `mise run check`      | Run all pre-commit hooks and tests   |
+
+## Project layout
+
+```
+.
+├── src/{{ package_name }}/
+│   ├── __init__.py
+│   ├── __main__.py     # CLI entry point
+│   └── agent.py        # Agent and deny-by-default Policy
+├── tests/
+├── .pre-commit-config.yaml
+├── mise.toml           # runtime versions + tasks
+└── pyproject.toml      # project metadata, ruff, pytest
+```
+
+## Zero-trust model
+
+Every action an agent takes must be explicitly allowed by its `Policy`.
+Anything not on the allowlist is denied:
+
+```python
+from {{ package_name }} import Agent, Policy
+
+agent = Agent("example", Policy(allowed_actions=frozenset({"read:config"})))
+agent.authorize("read:config")   # ok
+agent.authorize("write:config")  # raises PermissionDeniedError
+```
+
+## Updating from the template
+
+This project was generated with [Copier](https://copier.readthedocs.io/).
+To pull in upstream template changes:
+
+```bash
+copier update
+```

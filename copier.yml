@@ -1,0 +1,58 @@
+# Copier template for a new Zetra zero-trust agent.
+# Usage: copier copy gh:<org>/zetra-template my-agent
+
+_min_copier_version: "9.0.0"
+_subdirectory: template
+_answers_file: .copier-answers.yml
+
+project_name:
+  type: str
+  help: Human-readable name of the agent
+  default: Zetra Agent
+  validator: >-
+    {% if not project_name.strip() %}Project name cannot be empty{% endif %}
+
+project_slug:
+  type: str
+  help: Distribution / repository name (kebab-case)
+  default: "{{ project_name | lower | trim | replace(' ', '-') | replace('_', '-') }}"
+  validator: >-
+    {% if not (project_slug | regex_search('^[a-z][a-z0-9-]*[a-z0-9]$')) %}
+    Must be lowercase kebab-case, e.g. "zetra-agent"
+    {% endif %}
+
+package_name:
+  type: str
+  help: Python import name (snake_case)
+  default: "{{ project_slug | replace('-', '_') }}"
+  validator: >-
+    {% if not (package_name | regex_search('^[a-z][a-z0-9_]*$')) %}
+    Must be a valid lowercase Python identifier, e.g. "zetra_agent"
+    {% endif %}
+
+description:
+  type: str
+  help: One-line description of the agent
+  default: A zero-trust agent.
+
+author_name:
+  type: str
+  help: Author name
+
+author_email:
+  type: str
+  help: Author email
+
+python_version:
+  type: str
+  help: Python version
+  choices:
+    - "3.14"
+    - "3.13"
+    - "3.12"
+  default: "3.14"
+
+include_github_actions:
+  type: bool
+  help: Include a GitHub Actions CI workflow?
+  default: true

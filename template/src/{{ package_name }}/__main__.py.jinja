@@ -1,0 +1,13 @@
+"""Command-line entry point for {{ project_name }}."""
+
+from {{ package_name }}.agent import Agent
+
+
+def main() -> None:
+    agent = Agent("{{ project_slug }}")
+    allowed = len(agent.policy.allowed_actions)
+    print(f"{agent.name} started with {allowed} allowed actions")
+
+
+if __name__ == "__main__":
+    main()
