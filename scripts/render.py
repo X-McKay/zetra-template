@@ -6,12 +6,15 @@ from pathlib import Path
 
 
 def render(destination: Path, name: str) -> None:
-    if not re.fullmatch(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", name):
-        raise ValueError("name must be lowercase words separated by single hyphens")
+    if len(name) > 48 or not re.fullmatch(r"[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*", name):
+        raise ValueError(
+            "name must be at most 48 characters: lowercase words separated by hyphens or underscores"
+        )
     if destination.exists():
         raise ValueError("destination already exists")
     source = Path(__file__).resolve().parents[1] / "template"
     package = name.replace("-", "_")
+    distribution = name.replace("_", "-")
     destination.mkdir(parents=True)
     for item in sorted(source.rglob("*")):
         if not item.is_file() or any(
@@ -22,7 +25,11 @@ def render(destination: Path, name: str) -> None:
         relative = str(item.relative_to(source)).replace("agent_package", package)
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)
-        text = item.read_text().replace("agent_package", package).replace("agent-package", name)
+        text = (
+            item.read_text()
+            .replace("agent_package", package)
+            .replace("agent-package", distribution)
+        )
         target.write_text(text)
 
 

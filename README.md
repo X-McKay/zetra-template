@@ -9,6 +9,6 @@ uv sync --locked
 just validate
 ```
 
-Names use lowercase letters, digits, and single hyphens; Python imports replace hyphens with underscores. The renderer refuses an existing destination. It updates the project name in the lockfile as well as package paths and metadata.
+Names contain at most 48 lowercase letters, digits, and single hyphen or underscore separators. Python imports replace hyphens with underscores; distribution names replace underscores with hyphens. The renderer refuses an existing destination. It updates the project name in the lockfile as well as package paths and metadata.
 
 For template development, use Python 3.12 and `uv sync --group dev`, then `uv run pytest` and `uv run ruff check .`. Keep the SDK Git revision and `template/uv.lock` synchronized. A checkout imported through `PYTHONPATH` is a unit development check, not installed qualification. The fixture model runs deterministic trusted host code; it is not inference or isolation evidence.

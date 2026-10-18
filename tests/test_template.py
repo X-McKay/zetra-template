@@ -63,3 +63,17 @@ def test_render_updates_lock_root_identity(tmp_path):
     root = next(p for p in lock["package"] if p["name"] == "my-reader")
     assert root["source"] == {"editable": "."}
     assert "agent-package" not in (target / "uv.lock").read_text()
+
+
+def test_render_accepts_hyphen_and_underscore_names(tmp_path):
+    for name in ("my-reader", "my_reader"):
+        target = tmp_path / name
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts/render.py"), str(target), "--name", name],
+            check=True,
+        )
+        project = tomllib.loads((target / "pyproject.toml").read_text())
+        assert project["project"]["name"] == "my-reader"
+        assert (target / "src/my_reader/agents/document_reader/factory.py").is_file()
+        lock = tomllib.loads((target / "uv.lock").read_text())
+        assert any(p["name"] == "my-reader" for p in lock["package"])
