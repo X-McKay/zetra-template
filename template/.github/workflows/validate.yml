@@ -14,3 +14,4 @@ jobs:
       - run: uv run --locked zetra check .
       - run: uv run --locked zetra eval . --mode fixture
       - run: uv build --wheel
+      - run: uv run --locked python tests/packaging/check_wheel.py dist/*.whl

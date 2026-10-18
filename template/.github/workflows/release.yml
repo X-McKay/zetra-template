@@ -11,6 +11,7 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked pytest
       - run: uv build --wheel
+      - run: uv run --locked python tests/packaging/check_wheel.py dist/*.whl
       - run: sha256sum dist/*.whl > dist/SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:

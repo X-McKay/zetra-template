@@ -77,3 +77,41 @@ def test_render_accepts_hyphen_and_underscore_names(tmp_path):
         assert (target / "src/my_reader/agents/document_reader/factory.py").is_file()
         lock = tomllib.loads((target / "uv.lock").read_text())
         assert any(p["name"] == "my-reader" for p in lock["package"])
+
+
+def test_wheel_checker_rejects_missing_packaged_resources(tmp_path):
+    from zipfile import ZipFile
+
+    wheel = tmp_path / "agent_package-0.1.0-py3-none-any.whl"
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr("agent_package/__init__.py", "")
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "template/tests/packaging/check_wheel.py"), str(wheel)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "agent.yaml" in result.stderr
+
+
+def test_wheel_checker_verifies_exact_resource_bytes(tmp_path):
+    from zipfile import ZipFile
+
+    source = ROOT / "template/src"
+    resources = (
+        "agent_package/agents/document_reader/agent.yaml",
+        "agent_package/agents/document_reader/instructions/base.md",
+    )
+    wheel = tmp_path / "agent_package-0.1.0-py3-none-any.whl"
+    command = [sys.executable, str(ROOT / "template/tests/packaging/check_wheel.py"), str(wheel)]
+    with ZipFile(wheel, "w") as archive:
+        for resource in resources:
+            archive.writestr(resource, (source / resource).read_bytes())
+    subprocess.run(command, check=True)
+    with ZipFile(wheel, "w") as archive:
+        for resource in resources:
+            archive.writestr(resource, b"unexpected data")
+    result = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "differs from source" in result.stderr

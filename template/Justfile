@@ -5,3 +5,4 @@ validate:
     uv run --locked zetra check .
     uv run --locked zetra eval . --mode fixture
     uv build --wheel
+    uv run --locked python tests/packaging/check_wheel.py dist/*.whl
