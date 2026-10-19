@@ -1,26 +1,33 @@
 name: Validate canonical template
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
         with:
           version: '0.13.1'
           python-version: '3.12.14'
-      - run: uv sync --group dev
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest
+      - run: uv sync --locked --group dev
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked pytest
       - run: python scripts/render.py "$RUNNER_TEMP/rendered-agent" --name rendered-agent
       - name: Validate rendered application against its pinned SDK
         working-directory: ${{ runner.temp }}/rendered-agent
         run: |
           uv sync --locked
           uv run --locked ruff check .
+          uv run --locked ruff format --check .
           uv run --locked pytest
           uv run --locked zetra check .
           uv run --locked zetra eval . --mode fixture
           uv build --wheel
           uv run --locked python tests/packaging/check_wheel.py dist/*.whl
+          uv venv /tmp/zetra-wheel-install
+          uv pip install --python /tmp/zetra-wheel-install/bin/python dist/*.whl
