@@ -1,63 +1,18 @@
-# zetra-template
+# Zetra agent template
 
-A [Copier](https://github.com/copier-org/copier) template for scaffolding a new
-Zetra zero-trust agent in Python.
+This repository owns the canonical starter tree bundled by the Zetra SDK. It contains a standard Google ADK `LlmAgent`, one approved document tool, packaged instructions, and tests. There is no second generated template or Copier dependency.
 
-## What you get
-
-- **[uv](https://docs.astral.sh/uv/)** for dependency management, locking and builds (`src/` layout)
-- **[mise](https://mise.jdx.dev/)** pinning the Python and uv runtimes, plus task runner
-- **[ruff](https://docs.astral.sh/ruff/)** for linting and formatting
-- **[ty](https://docs.astral.sh/ty/)** for type checking
-- **[pre-commit](https://pre-commit.com/)** hooks wiring the above together
-- **[pytest](https://docs.pytest.org/)** with a starter test suite
-- A minimal deny-by-default `Agent` / `Policy` skeleton
-- Optional GitHub Actions CI workflow
-
-## Usage
-
-```bash
-# from a local checkout
-copier copy path/to/zetra-template my-agent
-
-# or from git
-copier copy gh:<org>/zetra-template my-agent
-
-cd my-agent
-mise trust && mise install
-mise run setup
-mise run check
+```sh
+python3 scripts/render.py /path/to/my-reader --name my-reader
+cd /path/to/my-reader
+uv sync --locked
+just validate
 ```
 
-### Updating an existing project
+Names contain at most 48 lowercase letters, digits, and single hyphen or underscore separators. Python imports replace hyphens with underscores; distribution names replace underscores with hyphens. Python keywords, standard-library modules, locked dependency names, and dependency import namespaces are reserved. The renderer reads and writes UTF-8 and stages the tree before creating a destination; failures remove its incomplete output. It refuses an existing destination. It updates the project name in the lockfile as well as package paths and metadata.
 
-Generated projects record their answers in `.copier-answers.yml`, so once this
-template lives in git (with tagged releases) you can pull in template changes:
+For template development, use Python 3.12.14 and uv 0.13.1, and `uv sync --group dev`, then `uv run pytest` and `uv run ruff check .` and `uv run ruff format --check .`. Keep the SDK Git revision and `template/uv.lock` synchronized. A checkout imported through `PYTHONPATH` is a unit development check, not installed qualification. The fixture model runs deterministic trusted host code; it is not inference or isolation evidence.
 
-```bash
-cd my-agent
-copier update
-```
+Pending SDK Git pins must remain reachable from their remote repositories. Merge the prerequisite SDK PRs in order: #4, then #5, then this template PR, using merge commits only; do not squash or rebase away commits referenced by a template or wheel. Validate the final SDK pin and regenerate the lock before merging this template. This policy does not authorize merges or tags.
 
-## Questions
-
-| Question                 | Default                         |
-| ------------------------ | ------------------------------- |
-| `project_name`           | `Zetra Agent`                   |
-| `project_slug`           | derived from `project_name`     |
-| `package_name`           | derived from `project_slug`     |
-| `description`            | `A zero-trust agent.`           |
-| `author_name`            | —                               |
-| `author_email`           | —                               |
-| `python_version`         | `3.14` (also `3.13`, `3.12`)    |
-| `include_github_actions` | `true`                          |
-
-## Developing the template
-
-The template files live in [`template/`](template/); `copier.yml` defines the
-questions. To render the template with defaults into a temp dir and run the
-generated project's full check suite:
-
-```bash
-mise run test
-```
+The wheel retains the exact SDK Git URL in its standard dependency metadata. CI checks metadata and packaged resource bytes, then installs the wheel into a fresh environment with dependency resolution enabled. The renderer reserves distribution names from the lock and maintains explicit import aliases in `scripts/render.py`; update these aliases when locked dependencies change.
