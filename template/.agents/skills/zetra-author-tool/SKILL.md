@@ -8,9 +8,10 @@ registration and the tool's callers before choosing its contract.
 
 Specify typed inputs, bounded outputs, resource scope, timeout/error behavior and
 actual effect. Register the tool through the existing context and match the effect
-to what the implementation does. For example, reading deployment history may fit
-an approved `remote_read` integration; restarting pods is a remote write and is
-not admitted by this starter. Do not describe a write as a read to pass admission.
+to what the implementation does. For example, this starter's pinned SDK rejects
+`remote_read`; reading deployment history through MCP needs a separately qualified
+SDK upgrade. Restarting pods is a remote write and is also unsupported. Do not
+relabel either operation as a workspace read to pass admission.
 
 Use synthetic local fixtures to test accepted inputs, invalid/out-of-scope inputs,
 empty/malformed upstream results, failures and output limits. Test that rejected

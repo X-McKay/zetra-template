@@ -50,13 +50,15 @@ a turnkey local-Temporal runner are planned platform work, not commands supplied
 by this pinned starter. Missing live infrastructure is not permission to relabel
 fixture results or silently change the execution mode.
 
-The pinned SDK admits `workspace_read`, `workspace_write`, and `remote_read` tool
-effects. External writes, arbitrary background processes, parallel tool execution,
-and MCP writes are outside its admitted profile. A prompt or Python annotation is
-not authorization or sandbox enforcement. Remote reads still require explicitly
-configured transport, identity, resource scope and deployment policy. Reuse the
-project's approved integration; do not acquire production credentials or change a
-global kube context to make a local task run.
+The pinned SDK admits only `workspace_read` and `workspace_write` tool effects.
+It rejects `remote_read` as well as remote writes; newer SDK checkouts may have
+different capabilities. Remote/MCP tools require a separately reviewed SDK upgrade,
+compatible lockfile and runtime qualification before use in this starter. Arbitrary
+background processes and parallel tools are also outside its admitted profile.
+A prompt or Python annotation is not authorization or sandbox enforcement. Any
+future remote integration needs explicit transport, identity, resource scope and
+deployment policy. Do not acquire production credentials or change a global kube
+context to make a local task run.
 
 The separate qualification workflow requires its documented infrastructure and
 explicit configuration. Retain `OUTCOME_UNKNOWN` and unconfirmed cleanup states.
