@@ -1,18 +1,44 @@
-# Zetra agent template
+# my-agent
 
-This repository owns the canonical starter tree bundled by the Zetra SDK. It contains a standard Google ADK `LlmAgent`, one approved document tool, packaged instructions, and tests. There is no second generated template or Copier dependency.
+Agents built with [Zetra](https://github.com/X-McKay/zetra) and deployed by
+[Kubani](https://github.com/X-McKay/kubani) on the Agent Runtime Platform. Zetra owns
+the platform, the sandbox SDK and the release tooling; Kubani owns the cluster and every
+object applied to it; this repository owns its agents: code, manifests, capabilities and
+the signed releases Kubani consumes.
 
-```sh
-python3 scripts/render.py /path/to/my-reader --name my-reader
-cd /path/to/my-reader
-uv sync --locked
-just validate
+```
+agents/<name>/
+  agent.yaml            manifest (spec 11.7), baked in as /app/agent.yaml
+  deploy/agent.yaml     the Agent resource (spec 6.1): identity, models, MCP tools, budget
+  pyproject.toml        this agent's dependencies; a member of the root workspace
+  src/<package>/        create_agent(ctx) and the agent's instructions
+  tests/                unit tests, including manifest/tool agreement
+pyproject.toml, uv.lock one workspace, one lock: its SHA-256 is AgentRelease.spec.lockSha256
+Dockerfile              one image recipe for every agent (rendered from zetra)
+.github/workflows/      CI, and the release shim that calls zetra's release action
 ```
 
-Names contain at most 48 lowercase letters, digits, and single hyphen or underscore separators. Python imports replace hyphens with underscores; distribution names replace underscores with hyphens. Python keywords, standard-library modules, locked dependency names, and dependency import namespaces are reserved. The renderer reads and writes UTF-8 and stages the tree before creating a destination; failures remove its incomplete output. It refuses an existing destination. It updates the project name in the lockfile as well as package paths and metadata.
+## Develop
 
-For template development, use Python 3.12.14 and uv 0.13.1, and `uv sync --group dev`, then `uv run pytest` and `uv run ruff check .` and `uv run ruff format --check .`. Keep the SDK Git revision and `template/uv.lock` synchronized. A checkout imported through `PYTHONPATH` is a unit development check, not installed qualification. The fixture model runs deterministic trusted host code; it is not inference or isolation evidence.
+```
+just setup      # install the locked workspace
+just check      # lint, tests, layout, rendered files
+just build my-agent   # build the image locally
+```
 
-Pending SDK Git pins must remain reachable from their remote repositories. Merge the prerequisite SDK PRs in order: #4, then #5, then this template PR, using merge commits only; do not squash or rebase away commits referenced by a template or wheel. Validate the final SDK pin and regenerate the lock before merging this template. This policy does not authorize merges or tags.
+Another agent in the same repository is another directory under `agents/`; to rename one,
+`uv run --locked zetra-agents rename <old> <new>` (it re-locks the workspace).
 
-The wheel retains the exact SDK Git URL in its standard dependency metadata. CI checks metadata and packaged resource bytes, then installs the wheel into a fresh environment with dependency resolution enabled. The renderer reserves distribution names from the lock and maintains explicit import aliases in `scripts/render.py`; update these aliases when locked dependencies change.
+## Release
+
+Push a tag `<agent>/v<version>` from merged `main`. The workflow builds the image, pushes
+it by digest, signs and attests it keylessly through Kubani's private Sigstore and
+publishes the release assets. Kubani then stages and approves the release:
+
+```
+just agent stage my-agent my-agent/v0.1.0     # in Kubani; a PR
+just agent approve <release>                     # in Kubani; a separate PR
+```
+
+Before the first release, the Kubani operator registers this repository for the tenant:
+`just agent register tenant-test <owner>/<repo> my-agent`.
