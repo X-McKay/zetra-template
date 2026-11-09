@@ -1,0 +1,12 @@
+schema_version: 1
+name: my-agent
+entrypoint: my_agent.agent:create_agent
+instructions: my_agent/instructions/base.md
+model:
+  backend: llm-main
+  name: Qwen3.6-35B-A3B-NVFP4
+  max_tokens: 1024
+  temperature: 0
+tools:
+  - name: write_report
+    effect: workspace_write
