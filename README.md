@@ -51,4 +51,4 @@ just agent approve <release>                     # in Kubani; a separate PR
 ```
 
 Before the first release, the Kubani operator registers this repository for the tenant:
-`just agent register tenant-test <owner>/<repo> my-agent`.
+`just agent register tenant-test <owner>/<repo> my-agent --source <checkout of this repository>`.
