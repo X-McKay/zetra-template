@@ -11,6 +11,10 @@ permissions:
   contents: read
 jobs:
   rerender:
+    # Only the template repository is expected to equal a fresh render. A repository
+    # created from it stops matching as soon as its agent is renamed or changed, so
+    # the check does not run there; delete this file in such a repository.
+    if: github.repository == 'X-McKay/zetra-template'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
