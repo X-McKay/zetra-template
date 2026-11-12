@@ -39,10 +39,6 @@ budgets and the sandbox are exercised only by a session on the platform.
 Another agent in the same repository is another directory under `agents/`; to rename one,
 `uv run --locked zetra-agents rename <old> <new>` (it re-locks the workspace).
 
-A repository created from this template also carries `.github/workflows/template.yml`,
-which checks that the template itself still equals a fresh render. It runs only in the
-template repository and can be deleted from yours.
-
 ## Release
 
 Push a tag `<agent>/v<version>` from merged `main`. The workflow builds the image, pushes
